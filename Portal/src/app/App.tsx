@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { track } from '@vercel/analytics';
 import AccessCodeModal from './components/AccessCodeModal';
 import { useAccessControl } from './hooks/useAccessControl';
 
@@ -17,6 +18,30 @@ export default function App() {
     facilities: 'Инфраструктура',
     calendar: 'Календарь'
   };
+  
+  // Отслеживание просмотров страниц
+  useEffect(() => {
+    if (currentPage === 'home') {
+      track('page_view', { 
+        page: currentTab,
+        pageName: tabNames[currentTab] || currentTab
+      });
+    } else {
+      track('page_view', { 
+        page: currentPage,
+        pageName: currentPage === 'portal' ? 'Портал сотрудника' : 'Контакты'
+      });
+    }
+  }, [currentPage, currentTab]);
+
+  // Отслеживание просмотров проектов
+  useEffect(() => {
+    if (selectedProject) {
+      track('project_viewed', { 
+        projectId: selectedProject
+      });
+    }
+  }, [selectedProject]);
   
   // Система контроля доступа
   const { isAuthenticated, showModal, handleAuthSuccess, handleAuthCancel } = useAccessControl(
