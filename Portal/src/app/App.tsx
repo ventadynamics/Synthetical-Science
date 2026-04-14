@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
-import { track } from '@vercel/analytics';
 import AccessCodeModal from './components/AccessCodeModal';
 import { useAccessControl } from './hooks/useAccessControl';
+
+// Declare umami global
+declare global {
+  interface Window {
+    umami?: {
+      track: (eventName: string, eventData?: Record<string, any>) => void;
+    };
+  }
+}
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -21,23 +29,25 @@ export default function App() {
   
   // Отслеживание просмотров страниц
   useEffect(() => {
-    if (currentPage === 'home') {
-      track('page_view', { 
-        page: currentTab,
-        pageName: tabNames[currentTab] || currentTab
-      });
-    } else {
-      track('page_view', { 
-        page: currentPage,
-        pageName: currentPage === 'portal' ? 'Портал сотрудника' : 'Контакты'
-      });
+    if (window.umami) {
+      if (currentPage === 'home') {
+        window.umami.track('page_view', { 
+          page: currentTab,
+          pageName: tabNames[currentTab] || currentTab
+        });
+      } else {
+        window.umami.track('page_view', { 
+          page: currentPage,
+          pageName: currentPage === 'portal' ? 'Портал сотрудника' : 'Контакты'
+        });
+      }
     }
   }, [currentPage, currentTab]);
 
   // Отслеживание просмотров проектов
   useEffect(() => {
-    if (selectedProject) {
-      track('project_viewed', { 
+    if (selectedProject && window.umami) {
+      window.umami.track('project_viewed', { 
         projectId: selectedProject
       });
     }

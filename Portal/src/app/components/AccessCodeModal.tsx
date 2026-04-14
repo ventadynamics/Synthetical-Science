@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { track } from '@vercel/analytics';
+
+// Declare umami global
+declare global {
+  interface Window {
+    umami?: {
+      track: (eventName: string, eventData?: Record<string, any>) => void;
+    };
+  }
+}
 
 interface AccessCodeModalProps {
   onSuccess: () => void;
@@ -16,15 +24,19 @@ export default function AccessCodeModal({ onSuccess, onCancel }: AccessCodeModal
     // Простая проверка кода (можно изменить на любой код)
     if (code === 'ZR1234') {
       // Отслеживание успешного входа
-      track('access_code_success', {
-        code: code
-      });
+      if (window.umami) {
+        window.umami.track('access_code_success', {
+          code: code
+        });
+      }
       onSuccess();
     } else {
       // Отслеживание неудачной попытки
-      track('access_code_failed', {
-        attempted_code: code
-      });
+      if (window.umami) {
+        window.umami.track('access_code_failed', {
+          attempted_code: code
+        });
+      }
       setError('Неверный код доступа');
       setCode('');
     }
